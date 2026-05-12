@@ -11,12 +11,14 @@ $filmes = json_decode(file_get_contents($arquivo), true);
 
 // --- LÓGICA: ADICIONAR ---
 if (isset($_POST['adicionar'])) {
-    $novoFilme = [
-        'id' => uniqid(), // Gera um ID único
-        'titulo' => $_POST['titulo'],
-        'diretor' => $_POST['diretor'],
-        'ano' => $_POST['ano']
+if (empty($filmes)) {
+    $filmes[] = [
+        'id' => uniqid(),
+        'titulo' => 'Matrix',
+        'diretor' => 'Lana e Lilly Wachowski',
+        'ano' => 1999
     ];
+}
     $filmes[] = $novoFilme;
     file_put_contents($arquivo, json_encode($filmes, JSON_PRETTY_PRINT));
     header("Location: filmes.php");
