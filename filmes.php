@@ -10,7 +10,12 @@ if (!isset($_SESSION['filmes'])) {
 
 // Criamos uma referência ou cópia para facilitar o uso no código
 $filmes = &$_SESSION['filmes'];
-
+$filmes[] = [
+    'id' => uniqid(),
+    'titulo' => 'Matrix',
+    'diretor' => 'Lana e Lilly Wachowski',
+    'ano' => 1999
+];
 // --- LÓGICA: ADICIONAR ---
 if (isset($_POST['adicionar'])) {
     $novoFilme = [
