@@ -1,14 +1,21 @@
 <?php
-$arquivo = 'filmes.json';
+// Inicia a sessão para que o array persista entre os carregamentos de página
+session_start();
 
-// Inicializa o arquivo se ele não existir
-if (!file_exists($arquivo)) {
-    file_put_contents($arquivo, json_encode([]));
+// --- INICIALIZAÇÃO ---
+// Se não existir a lista de filmes na sessão, cria um array vazio
+if (!isset($_SESSION['filmes'])) {
+    $_SESSION['filmes'] = [];
 }
 
-// Carrega os filmes do arquivo
-$filmes = json_decode(file_get_contents($arquivo), true);
-
+// Criamos uma referência ou cópia para facilitar o uso no código
+$filmes = &$_SESSION['filmes'];
+$filmes[] = [
+    'id' => uniqid(),
+    'titulo' => 'Matrix',
+    'diretor' => 'Lana e Lilly Wachowski',
+    'ano' => 1999
+];
 // --- LÓGICA: ADICIONAR ---
 if (isset($_POST['adicionar'])) {
 if (empty($filmes)) {
@@ -20,20 +27,25 @@ if (empty($filmes)) {
     ];
 }
     $filmes[] = $novoFilme;
-    file_put_contents($arquivo, json_encode($filmes, JSON_PRETTY_PRINT));
-    header("Location: filmes.php");
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
 }
 
 // --- LÓGICA: REMOVER ---
 if (isset($_GET['remover'])) {
-    $filmes = array_filter($filmes, function($f) {
-        return $f['id'] !== $_GET['remover'];
-    });
-    file_put_contents($arquivo, json_encode(array_values($filmes), JSON_PRETTY_PRINT));
-    header("Location: filmes.php");
+    foreach ($filmes as $index => $f) {
+        if ($f['id'] === $_GET['remover']) {
+            unset($filmes[$index]);
+            break;
+        }
+    }
+    // Reorganiza os índices do array
+    $filmes = array_values($filmes);
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
 }
 
-// --- LÓGICA: EDITAR (Prepara os dados para o formulário) ---
+// --- LÓGICA: EDITAR (Prepara os dados) ---
 $filmeParaEditar = null;
 if (isset($_GET['editar'])) {
     foreach ($filmes as $f) {
@@ -54,8 +66,8 @@ if (isset($_POST['atualizar'])) {
             break;
         }
     }
-    file_put_contents($arquivo, json_encode($filmes, JSON_PRETTY_PRINT));
-    header("Location: filmes.php");
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
 }
 ?>
 
@@ -63,7 +75,7 @@ if (isset($_POST['atualizar'])) {
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>CRUD de Filmes (JSON)</title>
+    <title>CRUD de Filmes (Array em Sessão)</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; background-color: #f0f2f5; }
         .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -72,7 +84,7 @@ if (isset($_POST['atualizar'])) {
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
         th { background-color: #007bff; color: white; }
-        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 14px; }
+        .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 14px; display: inline-block; }
         .btn-add { background-color: #28a745; color: white; }
         .btn-edit { background-color: #ffc107; color: black; }
         .btn-del { background-color: #dc3545; color: white; }
@@ -94,7 +106,7 @@ if (isset($_POST['atualizar'])) {
         
         <?php if ($filmeParaEditar): ?>
             <button type="submit" name="atualizar" class="btn btn-add">Atualizar</button>
-            <a href="filmes.php" class="btn btn-edit">Cancelar</a>
+            <a href="<?= $_SERVER['PHP_SELF'] ?>" class="btn btn-edit">Cancelar</a>
         <?php else: ?>
             <button type="submit" name="adicionar" class="btn btn-add">Adicionar</button>
         <?php endif; ?>
@@ -115,7 +127,7 @@ if (isset($_POST['atualizar'])) {
             <tr>
                 <td><?= htmlspecialchars($f['titulo']) ?></td>
                 <td><?= htmlspecialchars($f['diretor']) ?></td>
-                <td><?= $f['ano'] ?></td>
+                <td><?= htmlspecialchars($f['ano']) ?></td>
                 <td>
                     <a href="?editar=<?= $f['id'] ?>" class="btn btn-edit">Editar</a>
                     <a href="?remover=<?= $f['id'] ?>" class="btn btn-del" onclick="return confirm('Excluir este filme?')">Remover</a>
@@ -123,10 +135,12 @@ if (isset($_POST['atualizar'])) {
             </tr>
             <?php endforeach; ?>
             <?php if (empty($filmes)): ?>
-                <tr><td colspan="4">Nenhum filme cadastrado.</td></tr>
+                <tr><td colspan="4">Nenhum filme cadastrado na sessão.</td></tr>
             <?php endif; ?>
         </tbody>
     </table>
+    <br>
+    <small>* Os dados serão perdidos se você fechar o navegador ou limpar os cookies.</small>
 </div>
 
 </body>
