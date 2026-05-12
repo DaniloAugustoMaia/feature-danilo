@@ -18,12 +18,14 @@ $filmes[] = [
 ];
 // --- LÓGICA: ADICIONAR ---
 if (isset($_POST['adicionar'])) {
-    $novoFilme = [
+if (empty($filmes)) {
+    $filmes[] = [
         'id' => uniqid(),
-        'titulo' => $_POST['titulo'],
-        'diretor' => $_POST['diretor'],
-        'ano' => $_POST['ano']
+        'titulo' => 'Matrix',
+        'diretor' => 'Lana e Lilly Wachowski',
+        'ano' => 1999
     ];
+}
     $filmes[] = $novoFilme;
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
