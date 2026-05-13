@@ -12,9 +12,9 @@ if (!isset($_SESSION['filmes'])) {
 $filmes = &$_SESSION['filmes'];
 $filmes[] = [
     'id' => uniqid(),
-    'titulo' => 'Matrix',
-    'diretor' => 'Lana e Lilly Wachowski',
-    'ano' => 1999
+    'titulo' => 'Gabriel',
+    'diretor' => 'Priori de Morais',
+    'ano' => 2007
 ];
 // --- LÓGICA: ADICIONAR ---
 if (isset($_POST['adicionar'])) {
